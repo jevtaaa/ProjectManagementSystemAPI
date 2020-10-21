@@ -43,6 +43,7 @@ namespace ProjectManagementSystemAPI.Controllers
         }
 
         [HttpPost("register")]
+
         [Authorize(Roles = Roles.Admin)]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
