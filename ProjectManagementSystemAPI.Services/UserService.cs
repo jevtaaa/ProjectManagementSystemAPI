@@ -136,7 +136,7 @@ namespace ProjectManagementSystemAPI.Services
         // Return all users by admin
         public async Task<IEnumerable<User>> GetAll()
         {
-            var users = _context.Users;
+            var users = await _context.Users.ToListAsync();
 
             return users.WithoutPasswords();
         }
@@ -144,7 +144,7 @@ namespace ProjectManagementSystemAPI.Services
         // Return a users with specific role
         public async Task<IEnumerable<User>> GetUserWithRole(string role)
         {
-            var users = _context.Users.Where(u => u.Role == role);
+            var users =  _context.Users.Where(u => u.Role == role);
 
             if (users == null)
             {
