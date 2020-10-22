@@ -112,7 +112,7 @@ namespace ProjectManagementSystemAPI.Services
             try
             {
                  _context.Update(user);
-                 _context.SaveChanges();
+                 await _context.SaveChangesAsync();
             }
             catch (Exception)
             {
@@ -144,7 +144,7 @@ namespace ProjectManagementSystemAPI.Services
         // Return a users with specific role
         public async Task<IEnumerable<User>> GetUserWithRole(string role)
         {
-            var users =  _context.Users.Where(u => u.Role == role);
+            var users =  await _context.Users.Where(u => u.Role == role).ToListAsync();
 
             if (users == null)
             {

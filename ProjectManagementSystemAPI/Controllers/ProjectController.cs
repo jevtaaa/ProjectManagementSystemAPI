@@ -30,17 +30,8 @@ namespace ProjectManagementSystemAPI.Controllers
         [Authorize(Roles = Roles.Admin +"," + Roles.ProjectManager)]
         public async Task<IActionResult> CreateProject([FromBody] ProjectModel model)
         {
-            var id = User.Claims.First(claim => claim.Type == ClaimTypes.Name.ToString()).Value;
+            var projectManagerId = User.Claims.First(claim => claim.Type == ClaimTypes.Name.ToString()).Value;
             var role = User.Claims.First(claim => claim.Type == ClaimTypes.Role.ToString()).Value;
-
-            Debug.WriteLine(id);
-            if (model == null)
-            {
-                return BadRequest(new
-                {
-                    message = "Arguments not sent"
-                });
-            }
 
             var project = (Project)model;
 
@@ -48,7 +39,7 @@ namespace ProjectManagementSystemAPI.Controllers
 
             if (role == Roles.ProjectManager)
             {
-                projectManager = _userService.GetById(Convert.ToInt32(id));
+                projectManager = _userService.GetById(Convert.ToInt32(projectManagerId));
             }
             
             if (projectManager == null || projectManager.Role != Roles.ProjectManager)
@@ -96,6 +87,44 @@ namespace ProjectManagementSystemAPI.Controllers
             return BadRequest(new
             {
                 message = "Can't delete project"
+            });
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = Roles.Admin + "," + Roles.ProjectManager)]
+        public async Task<IActionResult> UpdateProject(int id, [FromBody] ProjectModel model)
+        {
+            var projectManagerId = User.Claims.First(claim => claim.Type == ClaimTypes.Name.ToString()).Value;
+            var role = User.Claims.First(claim => claim.Type == ClaimTypes.Role.ToString()).Value;
+
+            var project = (Project)model;
+            var projectManager = _userService.GetById(model.ProjectManagerId);
+
+            if (role == Roles.ProjectManager)
+            {
+                projectManager = _userService.GetById(Convert.ToInt32(projectManagerId));
+            }
+
+            if (projectManager == null || projectManager.Role != Roles.ProjectManager)
+                return NotFound(new
+                {
+                    message = "Cannot find project manager!"
+                });
+
+            project.ProjectManager = projectManager;
+
+            if (await _projectService.Update(id, project))
+            {
+                var updated = _projectService.GetById(id);
+                if (updated == null)
+                {
+                    return BadRequest();
+                }
+                return Ok(updated);
+            }
+            return BadRequest(new
+            {
+                message = "Project not updated!"
             });
         }
     }

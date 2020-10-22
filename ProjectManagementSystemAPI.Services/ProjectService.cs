@@ -111,9 +111,37 @@ namespace ProjectManagementSystemAPI.Services
             return project;
         }
 
-        public Task<bool> Update(int id, Project project)
+        public async Task<bool> Update(int id, Project project)
         {
-            throw new NotImplementedException();
+            var forUpdate = _context.Projects
+                                        .FirstOrDefault(project => project.Id == id);
+
+            if (forUpdate == null)
+            {
+                return false;
+            }
+
+            UpdateProject(ref forUpdate, project);
+
+            try
+            {
+                _context.Update(forUpdate);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+
+                return false;
+            }
+            return true;
+        }
+
+        // Help for update projects
+        
+        private void UpdateProject(ref Project forUpdate, Project project)
+        {
+            forUpdate.Name = project.Name;
+            forUpdate.ProjectManager = project.ProjectManager;
         }
     }
 }
