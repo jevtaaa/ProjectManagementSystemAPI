@@ -70,12 +70,33 @@ namespace ProjectManagementSystemAPI.Controllers
         }
 
         [HttpGet("all")]
-        [Authorize(Roles = Roles.Admin)]
+        [Authorize(Roles = Roles.Admin + "," + Roles.ProjectManager)]
         public async Task<IActionResult> GetAllProjects()
         {
-            var projects = await _userService.GetAll();
+            var id = User.Claims.First(claim => claim.Type == ClaimTypes.Name.ToString()).Value;
+            var role = User.Claims.First(claim => claim.Type == ClaimTypes.Role.ToString()).Value;
 
-            return Ok(projects);
+            if (role == Roles.ProjectManager)
+            {
+                var projectsPm = await _projectService.GetAllOfProjectManager(Convert.ToInt32(id));
+                return Ok(projectsPm);
+            } else
+            {
+                var projects = await _projectService.GetAll();
+                return Ok(projects);
+            }        
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = Roles.Admin)]
+        public async Task<IActionResult> DeleteProject(int id)
+        {
+            if (await _projectService.Delete(id))
+                return Ok();
+            return BadRequest(new
+            {
+                message = "Can't delete project"
+            });
         }
     }
 }

@@ -6,6 +6,7 @@ using ProjectManagementSystemAPI.Data.Models;
 using ProjectManagementSystemAPI.Data.Services;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,9 +37,22 @@ namespace ProjectManagementSystemAPI.Services
             }
         }
 
-        public Task<bool> Delete(int id)
+        public async Task<bool> Delete(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var forDelete = await _context.Set<Project>().FirstOrDefaultAsync(x => x.Id == id);
+                if (forDelete == null)
+                    return false;
+                _context.Set<Project>().Remove(forDelete);
+                _context.SaveChanges();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public async Task<IEnumerable<Project>> GetAll()
@@ -60,9 +74,25 @@ namespace ProjectManagementSystemAPI.Services
             return projects;
         }
 
-        public Task<IEnumerable<Project>> GetAllOfProjectManager(int id)
+        public async Task<IEnumerable<Project>> GetAllOfProjectManager(int id)
         {
-            throw new NotImplementedException();
+            var projects = await _context.Projects
+                                            .Include(project => project.ProjectManager)
+                                            .Include(project => project.Tasks)
+                                                .ThenInclude(t => t.Developer)
+                                            .Where(project => project.ProjectManager.Id == id)
+                                            .ToListAsync();
+
+            if (projects == null)
+            {
+                return null;
+            }
+
+            foreach (Project p in projects)
+            {
+                p.ProjectManager = p.ProjectManager.WithoutPassword();
+            }
+            return projects;
         }
 
         public Project GetById(int id)
@@ -70,6 +100,7 @@ namespace ProjectManagementSystemAPI.Services
             var project = _context.Projects
                                         .Include(project => project.ProjectManager)
                                         .Include(project => project.Tasks)
+                                            .ThenInclude(t => t.Developer)
                                         .FirstOrDefault(project => project.Id == id);
 
             if(project == null || project.ProjectManager == null)
