@@ -19,11 +19,13 @@ namespace ProjectManagementSystemAPI.Controllers
     {
         private readonly IProjectService _projectService;
         private readonly IUserService _userService;
+        private readonly ITaskService _taskService;
 
-        public ProjectController(IProjectService projectService, IUserService userService)
+        public ProjectController(IProjectService projectService, IUserService userService, ITaskService taskService)
         {
             _projectService = projectService;
             _userService = userService;
+            _taskService = taskService;
         }
 
         [HttpPost("create")]
@@ -126,6 +128,38 @@ namespace ProjectManagementSystemAPI.Controllers
             {
                 message = "Project not updated!"
             });
+        }
+
+        [HttpPost("{id}/addtask")]
+        [Authorize(Roles = Roles.Admin + "," + Roles.ProjectManager)]
+        public async Task<IActionResult> AddNewTask(int id, [FromBody] TaskModel model)
+        {
+            var task = (Data.Models.Task)model;
+
+            if(model.DeveloperId != 0)
+            {
+                var dev = _userService.GetById(model.DeveloperId);
+                if (dev.Role == Roles.Developer)
+                {
+                    task.Developer = _userService.GetById(model.DeveloperId);
+                }else
+                {
+                    return BadRequest(new
+                    {
+                        message = "You must send user with DEVELOPER role"
+                    });
+                }
+            }
+
+            var createdTask = await _taskService.Create(id, task);
+
+            if (createdTask == null)
+                return BadRequest(new
+                {
+                    message = "Can't add task!"
+                });
+
+            return Ok(createdTask);
         }
     }
 }
