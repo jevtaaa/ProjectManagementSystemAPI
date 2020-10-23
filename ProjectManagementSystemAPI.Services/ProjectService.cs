@@ -60,6 +60,7 @@ namespace ProjectManagementSystemAPI.Services
             var projects = await _context.Projects
                                         .Include(project => project.ProjectManager)
                                         .Include(project => project.Tasks)
+                                            .ThenInclude(t => t.Developer)
                                         .ToListAsync();
 
             if (projects == null)
@@ -70,6 +71,10 @@ namespace ProjectManagementSystemAPI.Services
             foreach(Project p in projects)
             {
                 p.ProjectManager = p.ProjectManager.WithoutPassword();
+                foreach(Data.Models.Task t in p.Tasks)
+                {
+                    t.Developer = t.Developer.WithoutPassword();
+                }
             }
             return projects;
         }
@@ -91,6 +96,10 @@ namespace ProjectManagementSystemAPI.Services
             foreach (Project p in projects)
             {
                 p.ProjectManager = p.ProjectManager.WithoutPassword();
+                foreach (Data.Models.Task t in p.Tasks)
+                {
+                    t.Developer = t.Developer.WithoutPassword();
+                }
             }
             return projects;
         }

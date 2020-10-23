@@ -145,6 +145,14 @@ namespace ProjectManagementSystemAPI.Controllers
                 });
             }
 
+            if(dev!=null && _taskService.DeveloperTasks(dev) >= 3)
+            {
+                return BadRequest(new
+                {
+                    message = "Developer already have maximum of 3 tasks!"
+                });
+            }
+            
             task.Developer = dev;
 
             var createdTask = await _taskService.Create(id, task);
@@ -158,10 +166,11 @@ namespace ProjectManagementSystemAPI.Controllers
             return Ok(createdTask);
         }
 
-        [HttpPost("{idProject}/tasks/{idTask}")]
+        [HttpPut("{idProject}/tasks/{idTask}")]
         [Authorize(Roles = Roles.Admin + "," + Roles.ProjectManager + "," + Roles.Developer)]
         public async Task<IActionResult> UpdateTask(int idProject, [FromBody] TaskModel model, int idTask)
         {
+            var role = User.Claims.First(claim => claim.Type == ClaimTypes.Role.ToString()).Value;
             var task = (Data.Models.Task)model;
 
             var dev = _userService.GetById(model.DeveloperId);
@@ -172,11 +181,20 @@ namespace ProjectManagementSystemAPI.Controllers
                     message = "You must send user with DEVELOPER role"
                 });
             }
+
             task.Developer = dev;
-            var updatedTask = await _taskService.Update(idProject, task, idTask);
+
+            var updatedTask = await _taskService.Update(idProject, task, idTask, role);
 
             if (updatedTask == null)
             {
+                if(dev != null && _taskService.DeveloperTasks(task.Developer) >= 3)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Developer already have 3 tasks!"
+                    });
+                }
                 return BadRequest(new
                 {
                     message = "Can't update task!"
@@ -185,6 +203,18 @@ namespace ProjectManagementSystemAPI.Controllers
 
             return Ok(updatedTask);
 
+        }
+
+        [HttpDelete("{idProject}/tasks/{idTask}")]
+        [Authorize(Roles = Roles.Admin + "," + Roles.ProjectManager)]
+        public async Task<IActionResult> DeleteTable(int idProject, int idTask)
+        {
+            if (await _taskService.Delete(idProject, idTask))
+                return Ok();
+            return BadRequest(new
+            {
+                message = "Can't delete task!"
+            });
         }
     }
 }
