@@ -36,9 +36,8 @@ namespace ProjectManagementSystemAPI.Services
                 _context.Set<Project>().Update(project);
                 await _context.SaveChangesAsync();
             }
-            catch(Exception e)
+            catch(Exception)
             {
-                Debug.WriteLine(e);
                 return null;
             }
 
@@ -48,6 +47,40 @@ namespace ProjectManagementSystemAPI.Services
             }
             return task;
         }
+
+        public async Task<Data.Models.Task> Update(int idProject, Data.Models.Task task, int idTask)
+        {
+            try
+            {
+                var project = await _context.Projects
+                                    .Include(p => p.Tasks)
+                                    .SingleOrDefaultAsync(p => p.Id == idProject);
+
+                var tasks = project.Tasks.ToList();
+                var taskForUpdate = tasks.SingleOrDefault(t => t.Id == idTask);
+
+                if(taskForUpdate == null)
+                {
+                    return null;
+                }
+
+                UpdateTask(ref taskForUpdate, task);
+                project.Tasks = tasks;
+                _context.Set<Project>().Update(project);
+                await _context.SaveChangesAsync();
+
+                task.Id = idTask;
+                if(task.Developer != null)
+                {
+                    task.Developer = task.Developer.WithoutPassword();
+                }
+                return task;
+            }
+            catch(Exception)
+            {
+                return null;
+            }
+        }   
 
         public Task<bool> Delete(int id)
         {
@@ -69,9 +102,14 @@ namespace ProjectManagementSystemAPI.Services
             throw new NotImplementedException();
         }
 
-        public Task<bool> Update(int id, Data.Models.Task task)
+        // Helper for update task
+        private void UpdateTask(ref Data.Models.Task taskForUpdate, Data.Models.Task task)
         {
-            throw new NotImplementedException();
+            taskForUpdate.Progress = task.Progress;
+            taskForUpdate.Status = task.Status;
+            taskForUpdate.Description = task.Description;
+            taskForUpdate.Deadline = task.Deadline;
+            taskForUpdate.Developer = task.Developer;
         }
     }
 }

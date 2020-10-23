@@ -15,6 +15,6 @@ namespace ProjectManagementSystemAPI.Data.Services
 
         Task<Data.Models.Task> Create(int id, Data.Models.Task task);
         Task<bool> Delete(int id);
-        Task<bool> Update(int id, Data.Models.Task task);
+        Task<Data.Models.Task> Update(int idProject, Data.Models.Task task, int idTask);
     }
 }

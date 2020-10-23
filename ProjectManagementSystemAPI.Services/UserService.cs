@@ -158,7 +158,12 @@ namespace ProjectManagementSystemAPI.Services
         // Help for update users
         public User GetById(int id)
         {
-            return _context.Users.FirstOrDefault(x => x.Id == id);
+            var user = _context.Users.FirstOrDefault(x => x.Id == id);
+            if (user == null)
+            {
+                return null;
+            }
+            return user;
         }
 
         private void UpdateUser(ref User userForUpdate, User updatedUser)

@@ -136,20 +136,16 @@ namespace ProjectManagementSystemAPI.Controllers
         {
             var task = (Data.Models.Task)model;
 
-            if(model.DeveloperId != 0)
+            var dev = _userService.GetById(model.DeveloperId);
+            if (dev != null && dev.Role != Roles.Developer)
             {
-                var dev = _userService.GetById(model.DeveloperId);
-                if (dev.Role == Roles.Developer)
+                return BadRequest(new
                 {
-                    task.Developer = _userService.GetById(model.DeveloperId);
-                }else
-                {
-                    return BadRequest(new
-                    {
-                        message = "You must send user with DEVELOPER role"
-                    });
-                }
+                    message = "You must send user with DEVELOPER role"
+                });
             }
+
+            task.Developer = dev;
 
             var createdTask = await _taskService.Create(id, task);
 
@@ -160,6 +156,35 @@ namespace ProjectManagementSystemAPI.Controllers
                 });
 
             return Ok(createdTask);
+        }
+
+        [HttpPost("{idProject}/tasks/{idTask}")]
+        [Authorize(Roles = Roles.Admin + "," + Roles.ProjectManager + "," + Roles.Developer)]
+        public async Task<IActionResult> UpdateTask(int idProject, [FromBody] TaskModel model, int idTask)
+        {
+            var task = (Data.Models.Task)model;
+
+            var dev = _userService.GetById(model.DeveloperId);
+            if (dev != null && dev.Role != Roles.Developer)
+            {
+                return BadRequest(new
+                {
+                    message = "You must send user with DEVELOPER role"
+                });
+            }
+            task.Developer = dev;
+            var updatedTask = await _taskService.Update(idProject, task, idTask);
+
+            if (updatedTask == null)
+            {
+                return BadRequest(new
+                {
+                    message = "Can't update task!"
+                });
+            }
+
+            return Ok(updatedTask);
+
         }
     }
 }
