@@ -67,6 +67,11 @@ namespace ProjectManagementSystemAPI.Services
 
                 if(task.Developer != null && taskForUpdate.Developer != task.Developer)
                 {
+                    if (role == Roles.Developer)
+                    {
+                        Debug.WriteLine("Developer can't update this task!");
+                        return null;
+                    }
                     if (DeveloperTasks(task.Developer) >= 3)
                     {
                         Debug.WriteLine("Developer already have 3 tasks!");
@@ -84,7 +89,7 @@ namespace ProjectManagementSystemAPI.Services
                 {
                     task.Developer = task.Developer.WithoutPassword();
                 }
-                return task;
+                return GetById(taskForUpdate.Id);
             }
             catch(Exception)
             {
@@ -139,25 +144,35 @@ namespace ProjectManagementSystemAPI.Services
 
         public Data.Models.Task GetById(int id)
         {
-            throw new NotImplementedException();
+            var task = _context.Tasks
+                                .Include(t => t.Developer)
+                                .FirstOrDefault(x => x.Id == id);
+            if (task == null)
+            {
+                return null;
+            }
+
+            task.Developer = task.Developer.WithoutPassword();
+
+            return task;
         }
 
         // Helper for update task
         private void UpdateTask(ref Data.Models.Task taskForUpdate, Data.Models.Task task, string role)
         {
-            if(role == Roles.Developer)
-            {
-                taskForUpdate.Progress = task.Progress;
-                taskForUpdate.Status = task.Status;
-                taskForUpdate.Description = task.Description;
-            }
-            else
+            if(role != Roles.Developer)
             {
                 taskForUpdate.Progress = task.Progress;
                 taskForUpdate.Status = task.Status;
                 taskForUpdate.Description = task.Description;
                 taskForUpdate.Deadline = task.Deadline;
                 taskForUpdate.Developer = task.Developer;
+            }
+            else
+            {
+                taskForUpdate.Progress = task.Progress;
+                taskForUpdate.Status = task.Status;
+                taskForUpdate.Description = task.Description;
             }  
         }
 

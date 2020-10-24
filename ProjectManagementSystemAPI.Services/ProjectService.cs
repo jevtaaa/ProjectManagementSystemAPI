@@ -146,7 +146,6 @@ namespace ProjectManagementSystemAPI.Services
         }
 
         // Help for update projects
-        
         private void UpdateProject(ref Project forUpdate, Project project)
         {
             forUpdate.Name = project.Name;
