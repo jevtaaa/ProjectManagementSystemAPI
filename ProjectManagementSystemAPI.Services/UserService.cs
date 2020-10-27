@@ -49,7 +49,7 @@ namespace ProjectManagementSystemAPI.Services
                     new Claim(ClaimTypes.Name, user.Result.Id.ToString()),
                     new Claim(ClaimTypes.Role, user.Result.Role)
                 }),
-                Expires = DateTime.UtcNow.AddMinutes(30),
+                Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -134,10 +134,26 @@ namespace ProjectManagementSystemAPI.Services
         }
 
         // Return all users by admin
-        public async Task<IEnumerable<User>> GetAll()
+        public async Task<IEnumerable<User>> GetAll(string role)
         {
             var users = await _context.Users.ToListAsync();
+            if (role == Roles.ProjectManager)
+            {
+                
+                users = await _context.Users
+                                         .Where(u => u.Role == "Developer")
+                                         .ToListAsync();
 
+                /*foreach(User u in users)
+                {
+                    int devTasks =  _context.Tasks.Count(task => task.Deadline > DateTime.Now && task.Developer == u);
+                    if(devTasks >= 3)
+                    {
+                        users.Remove(u);
+                    }
+                }*/
+            }   
+    
             return users.WithoutPasswords();
         }
 

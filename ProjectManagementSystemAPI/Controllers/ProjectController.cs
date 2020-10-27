@@ -135,7 +135,7 @@ namespace ProjectManagementSystemAPI.Controllers
         public async Task<IActionResult> AddNewTask(int id, [FromBody] TaskModel model)
         {
             var task = (Data.Models.Task)model;
-
+            Debug.WriteLine(task.Deadline + "" + task.Developer + "" + task.Description + "" + task.Progress);
             var dev = _userService.GetById(model.DeveloperId);
             if (dev != null && dev.Role != Roles.Developer)
             {
@@ -207,7 +207,7 @@ namespace ProjectManagementSystemAPI.Controllers
 
         [HttpDelete("{idProject}/tasks/{idTask}")]
         [Authorize(Roles = Roles.Admin + "," + Roles.ProjectManager)]
-        public async Task<IActionResult> DeleteTable(int idProject, int idTask)
+        public async Task<IActionResult> DeleteTask(int idProject, int idTask)
         {
             if (await _taskService.Delete(idProject, idTask))
                 return Ok();

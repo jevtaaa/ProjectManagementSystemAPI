@@ -64,13 +64,13 @@ namespace ProjectManagementSystemAPI.Controllers
         }
 
         [HttpGet("all")]
-        [Authorize(Roles = Roles.Admin)]
+        [Authorize(Roles = Roles.Admin + "," + Roles.ProjectManager)]
         public async Task<IActionResult> GetAllUsers()
         {
             // var id = User.Claims.First(claim => claim.Type == ClaimTypes.Name.ToString()).Value;
-            // var role = User.Claims.First(claim => claim.Type == ClaimTypes.Role.ToString()).Value;
+            var role = User.Claims.First(claim => claim.Type == ClaimTypes.Role.ToString()).Value;
             // Debug.WriteLine(id+"    " + role);
-            var users = await _userService.GetAll();
+            var users = await _userService.GetAll(role);
 
             return Ok(users);
         }

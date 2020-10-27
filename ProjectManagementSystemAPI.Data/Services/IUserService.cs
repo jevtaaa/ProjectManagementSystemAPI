@@ -9,7 +9,7 @@ namespace ProjectManagementSystemAPI.Data.Services
 {
     public interface IUserService
     {
-        Task<IEnumerable<User>> GetAll();
+        Task<IEnumerable<User>> GetAll(string role);
         Task<IEnumerable<User>> GetUserWithRole(string role);
         User GetById(int id);
 

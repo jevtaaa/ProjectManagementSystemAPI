@@ -132,14 +132,46 @@ namespace ProjectManagementSystemAPI.Services
             return true;
         }
 
-        public Task<IEnumerable<Data.Models.Task>> GetAll()
+        public async Task<IEnumerable<Data.Models.Task>> GetAll()
         {
-            throw new NotImplementedException();
+            var tasks = await _context.Tasks
+                                        .Include(t => t.Developer)
+                                        .ToListAsync();
+            if (tasks == null)
+            {
+                return null;
+            }
+
+            foreach(Data.Models.Task t in tasks)
+            {
+                t.Developer = t.Developer.WithoutPassword();
+            }
+            
+            return tasks;
         }
 
-        public Task<IEnumerable<Data.Models.Task>> GetAllOfUser(int id)
+        public async Task<IEnumerable<Data.Models.Task>> GetAllOfUser(int id)
         {
-            throw new NotImplementedException();
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+
+            var tasks = await _context.Tasks
+                                           .Where(t=> t.Developer == user || t.Developer == null)
+                                           .ToListAsync();
+            if (tasks == null)
+            {
+                return null;
+            }
+
+            foreach (Data.Models.Task t in tasks)
+            {
+                if(t.Developer != null)
+                {
+                    t.Developer = t.Developer.WithoutPassword();
+                }
+                
+            }
+
+            return tasks;
         }
 
         public Data.Models.Task GetById(int id)

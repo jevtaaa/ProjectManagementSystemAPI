@@ -36,7 +36,7 @@ namespace ProjectManagementSystemAPI.ViewModels
             {
                 user.Role = Roles.Admin;
             }
-            else if (model.Role == "ProjectManager")
+            else if (model.Role == "Project Manager")
             {
                 user.Role = Roles.ProjectManager;
             }
