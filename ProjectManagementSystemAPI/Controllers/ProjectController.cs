@@ -86,8 +86,10 @@ namespace ProjectManagementSystemAPI.Controllers
         {
             if (await _projectService.Delete(id))
                 return Ok();
+
             return BadRequest(new
             {
+
                 message = "Can't delete project"
             });
         }

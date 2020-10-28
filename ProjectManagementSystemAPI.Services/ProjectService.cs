@@ -114,9 +114,12 @@ namespace ProjectManagementSystemAPI.Services
 
             if(project == null || project.ProjectManager == null)
             {
+                
                 return null;
+                
             }
             project.ProjectManager = project.ProjectManager.WithoutPassword();
+
             return project;
         }
 
