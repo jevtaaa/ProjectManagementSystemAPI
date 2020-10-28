@@ -34,7 +34,7 @@ namespace ProjectManagementSystemAPI.Test
             IActionResult actionResult = await controller.DeleteProject(projectId);
 
             //Assert
-            Assert.IsType<OkResult>(actionResult);
+            Assert.IsType<BadRequestObjectResult>(actionResult);
         }
 
         [Fact]
