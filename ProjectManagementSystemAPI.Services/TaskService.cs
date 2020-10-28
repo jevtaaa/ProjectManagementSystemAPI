@@ -58,14 +58,13 @@ namespace ProjectManagementSystemAPI.Services
 
                 var tasks = project.Tasks.ToList();
                 var taskForUpdate = tasks.SingleOrDefault(t => t.Id == idTask);
-
-                if(taskForUpdate == null)
+                if (taskForUpdate == null)
                 {
                     Debug.WriteLine("Wrong task for project!");
                     return null;
                 }
-
-                if(task.Developer != null && taskForUpdate.Developer != task.Developer)
+                
+                if (task.Developer != null && taskForUpdate.Developer != task.Developer)
                 {
                     if (role == Roles.Developer)
                     {
@@ -80,10 +79,12 @@ namespace ProjectManagementSystemAPI.Services
                 }
 
                 UpdateTask(ref taskForUpdate, task, role);
+
                 project.Tasks = tasks;
                 _context.Set<Project>().Update(project);
                 await _context.SaveChangesAsync();
 
+                
                 task.Id = idTask;
                 if(task.Developer != null)
                 {
@@ -150,28 +151,42 @@ namespace ProjectManagementSystemAPI.Services
             return tasks;
         }
 
-        public async Task<IEnumerable<Data.Models.Task>> GetAllOfUser(int id)
+        public async Task<IEnumerable<Project>> GetAllOfUser(int id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
 
-            var tasks = await _context.Tasks
-                                           .Where(t=> t.Developer == user || t.Developer == null)
-                                           .ToListAsync();
-            if (tasks == null)
+            var projects = await _context.Projects.Select(p => new Project
+            {
+                Id = p.Id,
+                Name = p.Name,
+                ProjectManager = p.ProjectManager,
+                Tasks = p.Tasks.Where(t => t.Developer == user || t.Developer == null).ToList()
+            })
+            .ToListAsync();
+
+            /*var projects = await _context.Projects
+                                           .Include(p => p.Tasks)
+                                                .ThenInclude(t => t.Developer.Username == user.Username || t.Developer == null)
+                                           .Include(p => p.ProjectManager)
+                                           .ToListAsync();*/
+            if (projects == null)
             {
                 return null;
             }
 
-            foreach (Data.Models.Task t in tasks)
+            foreach (Project p in projects)
             {
-                if(t.Developer != null)
+                p.ProjectManager = p.ProjectManager.WithoutPassword();
+                foreach(Data.Models.Task t in p.Tasks)
                 {
-                    t.Developer = t.Developer.WithoutPassword();
-                }
-                
+                    if (t.Developer != null)
+                    {
+                        t.Developer = t.Developer.WithoutPassword();
+                    }
+                } 
             }
 
-            return tasks;
+            return projects;
         }
 
         public Data.Models.Task GetById(int id)
@@ -198,7 +213,7 @@ namespace ProjectManagementSystemAPI.Services
                 taskForUpdate.Status = task.Status;
                 taskForUpdate.Description = task.Description;
                 taskForUpdate.Deadline = task.Deadline;
-                taskForUpdate.Developer = task.Developer;
+                taskForUpdate.Developer = task.Developer;       
             }
             else
             {

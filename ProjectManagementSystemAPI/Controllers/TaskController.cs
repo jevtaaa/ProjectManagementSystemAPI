@@ -34,11 +34,12 @@ namespace ProjectManagementSystemAPI.Controllers
             return Ok(tasks);           
         }
 
-        [HttpGet("{id}")]
+        [HttpGet]
         [Authorize(Roles = Roles.Developer)]
-        public async Task<IActionResult> GetDeveloperTasks(int id)
+        public async Task<IActionResult> GetDeveloperTasks()
         {
-            var tasks = await _taskService.GetAllOfUser(id);
+            var id = User.Claims.First(claim => claim.Type == ClaimTypes.Name.ToString()).Value;
+            var tasks = await _taskService.GetAllOfUser(Convert.ToInt32(id));
             return Ok(tasks);
         }
     }

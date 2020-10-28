@@ -135,26 +135,33 @@ namespace ProjectManagementSystemAPI.Controllers
         public async Task<IActionResult> AddNewTask(int id, [FromBody] TaskModel model)
         {
             var task = (Data.Models.Task)model;
-            Debug.WriteLine(task.Deadline + "" + task.Developer + "" + task.Description + "" + task.Progress);
-            var dev = _userService.GetById(model.DeveloperId);
-            if (dev != null && dev.Role != Roles.Developer)
+            Debug.WriteLine(model.DeveloperId);
+            if (model.DeveloperId == null)
             {
-                return BadRequest(new
-                {
-                    message = "You must send user with DEVELOPER role"
-                });
+                task.Developer = null;
             }
-
-            if(dev!=null && _taskService.DeveloperTasks(dev) >= 3)
+            else
             {
-                return BadRequest(new
+                int devId = Convert.ToInt32(model.DeveloperId);
+                var dev = _userService.GetById(devId);
+                if (dev != null && dev.Role != Roles.Developer)
                 {
-                    message = "Developer already have maximum of 3 tasks!"
-                });
-            }
-            
-            task.Developer = dev;
+                    return BadRequest(new
+                    {
+                        message = "You must send user with DEVELOPER role"
+                    });
+                }
 
+                if (dev != null && _taskService.DeveloperTasks(dev) >= 3)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Developer already have maximum of 3 tasks!"
+                    });
+                }
+                task.Developer = dev;
+            }
+           
             var createdTask = await _taskService.Create(id, task);
 
             if (createdTask == null)
@@ -172,23 +179,34 @@ namespace ProjectManagementSystemAPI.Controllers
         {
             var role = User.Claims.First(claim => claim.Type == ClaimTypes.Role.ToString()).Value;
             var task = (Data.Models.Task)model;
-
-            var dev = _userService.GetById(model.DeveloperId);
-            if (dev != null && dev.Role != Roles.Developer)
+            var devCheck = task.Developer;
+            Debug.WriteLine(task.Developer);
+            if (model.DeveloperId == null)
             {
-                return BadRequest(new
+                task.Developer = null;
+            }
+            else
+            {
+                int devId = Convert.ToInt32(model.DeveloperId);
+                var dev = _userService.GetById(devId);
+                if (dev != null && dev.Role != Roles.Developer)
                 {
-                    message = "You must send user with DEVELOPER role"
-                });
+                    return BadRequest(new
+                    {
+                        message = "You must send user with DEVELOPER role"
+                    });
+                }
+ 
+                task.Developer = dev;
+
             }
 
-            task.Developer = dev;
-
+            
             var updatedTask = await _taskService.Update(idProject, task, idTask, role);
 
             if (updatedTask == null)
             {
-                if(dev != null && _taskService.DeveloperTasks(task.Developer) >= 3)
+                if(task.Developer != null && _taskService.DeveloperTasks(task.Developer) >= 3)
                 {
                     return BadRequest(new
                     {

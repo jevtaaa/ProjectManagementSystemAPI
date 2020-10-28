@@ -9,7 +9,7 @@ namespace ProjectManagementSystemAPI.Data.Services
     public interface ITaskService
     {
         Task<IEnumerable<Data.Models.Task>> GetAll();
-        Task<IEnumerable<Data.Models.Task>> GetAllOfUser(int id);
+        Task<IEnumerable<Project>> GetAllOfUser(int id);
         Data.Models.Task GetById(int id);
 
 

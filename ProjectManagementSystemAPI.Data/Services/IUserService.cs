@@ -12,6 +12,7 @@ namespace ProjectManagementSystemAPI.Data.Services
         Task<IEnumerable<User>> GetAll(string role);
         Task<IEnumerable<User>> GetUserWithRole(string role);
         User GetById(int id);
+        Task<User> GetLogged(int id);
 
         
         User Login(string username, string password);

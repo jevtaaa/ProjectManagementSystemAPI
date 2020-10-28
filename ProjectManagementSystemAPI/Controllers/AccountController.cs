@@ -89,6 +89,15 @@ namespace ProjectManagementSystemAPI.Controllers
             return Ok(users);
         }
 
+        [HttpGet("logged")]
+        [Authorize(Roles = Roles.Admin + "," + Roles.ProjectManager + "," + Roles.Developer)]
+        public async Task<IActionResult> GetLoggedUser()
+        {
+            var id = User.Claims.First(claim => claim.Type == ClaimTypes.Name.ToString()).Value;
+            var user =  await _userService.GetLogged(Convert.ToInt32(id));
+            return Ok(user);
+        }
+
         [HttpDelete("{id}")]
         [Authorize(Roles = Roles.Admin)]
         public async Task<IActionResult> DeleteUser(int id)

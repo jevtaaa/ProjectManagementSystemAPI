@@ -172,7 +172,7 @@ namespace ProjectManagementSystemAPI.Services
         }
 
         // Help for update users
-        public User GetById(int id)
+        public  User GetById(int id)
         {
             var user = _context.Users.FirstOrDefault(x => x.Id == id);
             if (user == null)
@@ -188,6 +188,16 @@ namespace ProjectManagementSystemAPI.Services
             userForUpdate.Surname = updatedUser.Surname;
             userForUpdate.Email = updatedUser.Email;
             userForUpdate.Role = updatedUser.Role;
+        }
+
+        public async Task<User> GetLogged(int id)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+            if (user == null)
+            {
+                return null;
+            }
+            return user;
         }
     }
 }

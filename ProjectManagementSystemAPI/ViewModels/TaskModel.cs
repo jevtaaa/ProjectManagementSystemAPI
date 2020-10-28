@@ -12,7 +12,7 @@ namespace ProjectManagementSystemAPI.ViewModels
         public double Progress { get; set; }
         public DateTime Deadline { get; set; }
         public string Description { get; set; }
-        public int DeveloperId { get; set; }
+        public int? DeveloperId { get; set; }
 
         public static implicit operator Task(TaskModel model)
         {
@@ -21,6 +21,7 @@ namespace ProjectManagementSystemAPI.ViewModels
             t.Deadline = model.Deadline;
             t.Description = model.Description;
             t.Progress = model.Progress;
+            t.Developer = null;
 
             if (model.Status == "new")
             {
